@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Minhas Consultas{% endblock %}
+{% block content %}
+<h2>Minhas Consultas</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Funcionário</th>
+            <th>Data</th>
+            <th>Horário</th>
+            <th>Observações</th>
+            <th>Ação</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for consulta in consultas %}
+        <tr>
+            <td>{{ consulta.funcionario.usuario.username }}</td>
+            <td>{{ consulta.horario.data }}</td>
+            <td>{{ consulta.horario.hora_inicio }} - {{ consulta.horario.hora_fim }}</td>
+            <td>{{ consulta.observacoes }}</td>
+            <td>
+                <a href="{% url 'cancelar_consulta' consulta.id %}" class="btn btn-danger btn-sm">Cancelar</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">Nenhuma consulta agendada.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

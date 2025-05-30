@@ -1,0 +1,9 @@
+
+{% block title %}Painel do Funcionário{% endblock %}
+{% block content %}
+<h2>Painel do Funcionário</h2>
+<div class="list-group">
+    <a href="{% url 'adicionar_horario' %}" class="list-group-item list-group-item-action">Adicionar Horário Disponível</a>
+    <a href="{% url 'meus_horarios' %}" class="list-group-item list-group-item-action">Meus Horários</a>
+</div>
+{% endblock %}

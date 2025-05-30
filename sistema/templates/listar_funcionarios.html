@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Funcionários{% endblock %}
+{% block content %}
+<h2>Lista de Funcionários</h2>
+<ul class="list-group">
+    {% for f in funcionarios %}
+        <li class="list-group-item">
+            {{ f.usuario.username }} - {{ f.especialidade }}
+        </li>
+    {% empty %}
+        <li class="list-group-item">Nenhum funcionário cadastrado.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
