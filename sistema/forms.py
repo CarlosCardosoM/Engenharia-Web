@@ -3,7 +3,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, User
 from django.contrib.auth.models import User
 from .models import PerfilCliente, PerfilFuncionario, HorarioDisponivel, Consulta
 
-class RegistroClienteForm(UserCreationForm):
+class RegistroClienteForm(forms.ModelForm):
     matricula = forms.CharField(
         max_length=20,
         widget=forms.TextInput(attrs={'class': 'form-control'})
@@ -12,34 +12,56 @@ class RegistroClienteForm(UserCreationForm):
         max_length=15,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
-
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password1', 'password2']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({'class': 'form-control'})
-        self.fields['email'].widget.attrs.update({'class': 'form-control'})
-        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
-        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
-
-class RegistroFuncionarioForm(UserCreationForm):
-    especialidade = forms.CharField(
-        max_length=100,
-        widget=forms.TextInput(attrs={'class': 'form-control'})
+    password1 = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    password2 = forms.CharField(
+        label='Confirme a Senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2']
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({'class': 'form-control'})
-        self.fields['email'].widget.attrs.update({'class': 'form-control'})
-        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
-        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
+        fields = ['username', 'email']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get("password1")
+        password2 = cleaned_data.get("password2")
+
+        if password1 != password2:
+            raise forms.ValidationError("As senhas não coincidem.")
+
+        return cleaned_data
+
+class RegistroFuncionarioForm(forms.ModelForm):
+    especialidade = forms.CharField(
+        max_length=100,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    password1 = forms.CharField(
+        label='Senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    password2 = forms.CharField(
+        label='Confirme a Senha',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get("password1")
+        password2 = cleaned_data.get("password2")
+
+        if password1 != password2:
+            raise forms.ValidationError("As senhas não coincidem.")
+
+        return cleaned_data
 
 class HorarioForm(forms.ModelForm):
     class Meta:

@@ -14,7 +14,9 @@ def registro_cliente(request):
     if request.method == 'POST':
         form = RegistroClienteForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password1'])  # 👈 Importante!
+            user.save()
             PerfilCliente.objects.create(
                 usuario=user,
                 matricula=form.cleaned_data['matricula'],
@@ -25,11 +27,14 @@ def registro_cliente(request):
         form = RegistroClienteForm()
     return render(request, 'registro_cliente.html', {'form': form})
 
+
 def registro_funcionario(request):
     if request.method == 'POST':
         form = RegistroFuncionarioForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password1'])  # 👈 Importante!
+            user.save()
             PerfilFuncionario.objects.create(
                 usuario=user,
                 especialidade=form.cleaned_data['especialidade']
@@ -38,6 +43,7 @@ def registro_funcionario(request):
     else:
         form = RegistroFuncionarioForm()
     return render(request, 'registro_funcionario.html', {'form': form})
+
 
 def login_view(request):
     if request.method == 'POST':
