@@ -4,20 +4,33 @@ from django.contrib.auth.models import User
 from .models import PerfilCliente, PerfilFuncionario, HorarioDisponivel, Consulta
 
 class RegistroClienteForm(forms.ModelForm):
+    username = forms.CharField(
+        max_length=150,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
     matricula = forms.CharField(
         max_length=20,
+        required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     telefone = forms.CharField(
         max_length=15,
+        required=False,
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
     password1 = forms.CharField(
         label='Senha',
+        required=False,
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
     password2 = forms.CharField(
         label='Confirme a Senha',
+        required=False,
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
     )
 
@@ -30,15 +43,26 @@ class RegistroClienteForm(forms.ModelForm):
         password1 = cleaned_data.get("password1")
         password2 = cleaned_data.get("password2")
 
-        if password1 != password2:
-            raise forms.ValidationError("As senhas não coincidem.")
+        if password1 or password2:
+            if password1 != password2:
+                raise forms.ValidationError("As senhas não coincidem.")
 
         return cleaned_data
 
 class RegistroFuncionarioForm(forms.ModelForm):
     especialidade = forms.CharField(
+        label='Especialidade',
         max_length=100,
         widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    username = forms.CharField(
+        label='Usuário',
+        max_length=150,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    email = forms.EmailField(
+        label='E-mail',
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
     )
     password1 = forms.CharField(
         label='Senha',
@@ -58,10 +82,19 @@ class RegistroFuncionarioForm(forms.ModelForm):
         password1 = cleaned_data.get("password1")
         password2 = cleaned_data.get("password2")
 
-        if password1 != password2:
+        if password1 and password2 and password1 != password2:
             raise forms.ValidationError("As senhas não coincidem.")
 
         return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get('password1')
+        if password:
+            user.set_password(password)
+        if commit:
+            user.save()
+        return user
 
 class HorarioForm(forms.ModelForm):
     class Meta:
