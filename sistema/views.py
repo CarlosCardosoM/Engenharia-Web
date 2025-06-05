@@ -164,5 +164,3 @@ def excluir_horario(request, horario_id):
 def listar_funcionarios(request):
     funcionarios = PerfilFuncionario.objects.all()
     return render(request, 'listar_funcionarios.html', {'funcionarios': funcionarios})
-
-
