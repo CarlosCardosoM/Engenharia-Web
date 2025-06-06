@@ -1,0 +1,66 @@
+body {
+    background: url('/static/img/fundo.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    width: 360px;
+    text-align: center;
+}
+
+.card h2 {
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+    width: 100%;
+    padding: 10px 10px 10px 30px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.input-group i {
+    position: absolute;
+    top: 12px;
+    left: 8px;
+    color: #888;
+}
+
+.btn {
+    background: #007bff;
+    color: white;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn:hover {
+    background: #0056b3;
+}
