@@ -31,5 +31,10 @@ class Consulta(models.Model):
     horario = models.ForeignKey(HorarioDisponivel, on_delete=models.CASCADE)
     observacoes = models.TextField(blank=True)
 
+
+    
+
     def __str__(self):
         return f'{self.cliente} com {self.funcionario} em {self.horario.data}'
+    
+    

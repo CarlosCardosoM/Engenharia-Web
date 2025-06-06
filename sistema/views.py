@@ -131,6 +131,7 @@ def funcionario_dashboard(request):
         return redirect('home')
     return render(request, 'funcionario_dashboard.html')
 
+
 @login_required
 def adicionar_horario(request):
     funcionario = request.user.perfilfuncionario
