@@ -1,9 +1,144 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
 {% block title %}Painel do Cliente{% endblock %}
+
 {% block content %}
-<h2>Painel do Cliente</h2>
-<div class="list-group">
-    <a href="{% url 'agendar_consulta' %}" class="list-group-item list-group-item-action">Agendar Consulta</a>
-    <a href="{% url 'minhas_consultas' %}" class="list-group-item list-group-item-action">Minhas Consultas</a>
+<div class="d-flex min-vh-100">
+
+  <!-- Menu lateral com imagem de fundo -->
+  <div class="text-white p-4 d-flex flex-column" style="width: 250px; background: url('{% static "img/fundo.png" %}') no-repeat center center; background-size: cover;">
+    <!-- Slogan no topo -->
+    <div class="mb-4 text-center">
+      <img src="{% static 'img/slogan.png' %}" alt="Slogan" class="img-fluid" style="max-height: 80px;">
+    </div>
+
+    <!-- Espaço flexível para centralizar o menu -->
+    <div class="flex-grow-1 d-flex flex-column justify-content-center">
+      <!-- Menu com espaçamento melhorado -->
+      <div class="mb-4">
+        <a href="{% url 'agendar_consulta' %}" 
+           class="d-block py-3 px-3 mb-2 rounded text-white text-decoration-none text-center 
+                  {% if pagina == 'agendar_consulta' %}bg-primary{% else %}hover-bg-primary{% endif %}"
+           style="transition: all 0.3s; font-size: 1.1rem;">
+          Agendar Consulta
+        </a>
+        
+        <a href="{% url 'minhas_consultas' %}" 
+           class="d-block py-3 px-3 mb-2 rounded text-white text-decoration-none text-center 
+                  {% if pagina == 'minhas_consultas' %}bg-primary{% else %}hover-bg-primary{% endif %}"
+           style="transition: all 0.3s; font-size: 1.1rem;">
+          Minhas Consultas
+        </a>
+        
+        <a href="{% url 'editar_perfil' %}" 
+           class="d-block py-3 px-3 mb-2 rounded text-white text-decoration-none text-center 
+                  {% if pagina == 'editar_perfil' %}bg-primary{% else %}hover-bg-primary{% endif %}"
+           style="transition: all 0.3s; font-size: 1.1rem;">
+          Editar Perfil
+        </a>
+      </div>
+    </div>
+
+    <!-- Logout na base -->
+    <div class="mt-auto">
+      <a href="{% url 'logout' %}" 
+         class="d-block py-3 px-3 rounded text-white text-decoration-none text-center hover-bg-primary"
+         style="transition: all 0.3s; font-size: 1.1rem;">
+        Logout
+      </a>
+    </div>
+  </div>
+
+  <!-- Conteúdo principal -->
+  <div class="flex-grow-1 p-4 bg-light">
+
+    {% if pagina == 'dashboard' %}
+      <h2>Bem-vindo ao Painel do Cliente</h2>
+      <p>Use o menu à esquerda para navegar.</p>
+
+    {% elif pagina == 'agendar_consulta' %}
+      <div class="container">
+        <h2 class="mb-4">Agendar Consulta</h2>
+
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <form method="post" novalidate>
+              {% csrf_token %}
+
+              {% for field in form %}
+                <div class="mb-3">
+                  <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                  {{ field|add_class:"form-control" }}
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                      {{ field.errors|striptags }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+
+              <button type="submit" class="btn btn-success">
+                <i class="bi bi-calendar-plus"></i> Agendar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    {% elif pagina == 'minhas_consultas' %}
+      <div class="container">
+        <h2>Minhas Consultas</h2>
+        {% if consultas %}
+          <ul class="list-group">
+            {% for consulta in consultas %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ consulta }} 
+                <a href="{% url 'cancelar_consulta' consulta.id %}" class="btn btn-danger btn-sm">Cancelar</a>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p>Você não tem consultas agendadas.</p>
+        {% endif %}
+      </div>
+
+    {% elif pagina == 'editar_perfil' %}
+      <div class="container">
+        <h2 class="mb-4">Editar Perfil</h2>
+        
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <form method="post" novalidate>
+              {% csrf_token %}
+              
+              {% for field in form %}
+                <div class="mb-3">
+                  <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                  {{ field|add_class:"form-control" }}
+                  {% if field.help_text %}
+                    <div class="form-text">{{ field.help_text }}</div>
+                  {% endif %}
+                  {% if field.errors %}
+                    <div class="text-danger small mt-1">
+                      {{ field.errors|striptags }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+              
+              <button type="submit" class="btn btn-primary mt-3">
+                <i class="bi bi-save"></i> Salvar Alterações
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
 </div>
 {% endblock %}

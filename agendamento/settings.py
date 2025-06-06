@@ -80,6 +80,16 @@ STATICFILES_DIRS = [
     BASE_DIR / "agendamento" / "static",
 ]
 
+<<<<<<< HEAD
 STATIC_ROOT = BASE_DIR / "staticfiles"
+=======
+STATIC_URL = 'static/'
+
+import os
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+>>>>>>> 934689695b98a36be82d6c6f7e1da7748901179f
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
