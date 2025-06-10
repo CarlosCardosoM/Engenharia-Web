@@ -12,6 +12,8 @@ class PerfilCliente(models.Model):
 class PerfilFuncionario(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
     especialidade = models.CharField(max_length=100)
+    foto = models.ImageField(upload_to='fotos_perfil/', null=True, blank=True)
+    biografia = models.TextField(max_length=500, null=True, blank=True, help_text="Um breve resumo sobre sua experiência e abordagem.")
 
     def __str__(self):
         return self.usuario.username

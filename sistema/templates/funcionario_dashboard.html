@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load widget_tweaks %}
+
 {% block title %}Painel do Funcionário{% endblock %}
 
 {% block content %}
@@ -14,6 +15,7 @@
     
     <div class="flex-grow-1 d-flex flex-column justify-content-center">
       <div class="mb-4">
+        
         <a href="{% url 'adicionar_horario' %}" 
            class="d-flex align-items-center py-3 px-3 mb-2 rounded text-white text-decoration-none 
                   {% if pagina == 'adicionar_horario' %}bg-primary{% else %}hover-bg-primary{% endif %}"
@@ -21,6 +23,7 @@
           <i class="bi bi-clock-plus me-3" style="font-size: 1.2rem;"></i>
           Adicionar Horário
         </a>
+        
         <a href="{% url 'meus_horarios' %}" 
            class="d-flex align-items-center py-3 px-3 mb-2 rounded text-white text-decoration-none 
                   {% if pagina == 'meus_horarios' %}bg-primary{% else %}hover-bg-primary{% endif %}"
@@ -28,13 +31,23 @@
           <i class="bi bi-list-task me-3" style="font-size: 1.2rem;"></i>
           Meus Horários
         </a>
+
+        <a href="{% url 'consultas_agendadas_funcionario' %}" 
+           class="d-flex align-items-center py-3 px-3 mb-2 rounded text-white text-decoration-none 
+                  {% if pagina == 'consultas_agendadas' %}bg-primary{% else %}hover-bg-primary{% endif %}"
+           style="transition: all 0.3s; font-size: 1.1rem;">
+          <i class="bi bi-calendar-check me-3" style="font-size: 1.2rem;"></i>
+          Consultas Agendadas
+        </a>
+
         <a href="{% url 'editar_perfil' %}" 
            class="d-flex align-items-center py-3 px-3 mb-2 rounded text-white text-decoration-none 
                   {% if pagina == 'editar_perfil' %}bg-primary{% else %}hover-bg-primary{% endif %}"
            style="transition: all 0.3s; font-size: 1.1rem;">
           <i class="bi bi-person-circle me-3" style="font-size: 1.2rem;"></i>
-          Perfil
+          Editar Perfil
         </a>
+
       </div>
     </div>
 
@@ -47,80 +60,221 @@
       </a>
     </div>
   </div>
+
   <div class="flex-grow-1 p-4 bg-light">
+
     {% if pagina == 'dashboard' %}
       <h2>Bem-vindo ao Painel do Funcionário</h2>
       <p>Use o menu à esquerda para gerenciar seus horários e perfil.</p>
 
     {% elif pagina == 'adicionar_horario' %}
       <div class="container">
-        <h2 class="mb-4">Adicionar Horário Disponível</h2>
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <form method="post">
-              {% csrf_token %}
-              {{ form.as_p }}
-              <button type="submit" class="btn btn-success mt-3">
-                Salvar Horário
-              </button>
-            </form>
-          </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h2 class="mb-4 text-center">Adicionar Horário Disponível</h2>
+                {% if form.errors %}
+                  <div class="alert alert-danger">
+                      Por favor, corrija os erros abaixo.
+                      {{ form.non_field_errors }}
+                  </div>
+                {% endif %}
+                <div class="card shadow-sm">
+                    <div class="card-body p-4 p-md-5">
+                        <form method="post">
+                            {% csrf_token %}
+                            {% for field in form %}
+                              <div class="mb-3">
+                                  <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                  {{ field|add_class:"form-control" }}
+                                  {% if field.errors %}
+                                      <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
+                                  {% endif %}
+                              </div>
+                            {% endfor %}
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success mt-3">
+                                    <i class="bi bi-save"></i> Salvar Horário
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
 
     {% elif pagina == 'meus_horarios' %}
       <div class="container">
         <h2 class="mb-4">Meus Horários Disponíveis</h2>
-        <a href="{% url 'adicionar_horario' %}" class="btn btn-primary mb-3">Adicionar Novo Horário</a>
         <div class="card shadow-sm">
             <div class="card-body">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Início</th>
-                            <th>Fim</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {% for horario in horarios %}
-                        <tr>
-                            <td>{{ horario.data|date:"d/m/Y" }}</td>
-                            <td>{{ horario.hora_inicio|time:"H:i" }}</td>
-                            <td>{{ horario.hora_fim|time:"H:i" }}</td>
-                            <td>
-                                <a href="{% url 'excluir_horario' horario.id %}" class="btn btn-danger btn-sm">Excluir</a>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr><td colspan="4" class="text-center">Nenhum horário cadastrado.</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Início</th>
+                                <th>Fim</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for horario in horarios %}
+                            <tr>
+                                <td>{{ horario.data|date:"d/m/Y" }}</td>
+                                <td>{{ horario.hora_inicio|time:"H:i" }}</td>
+                                <td>{{ horario.hora_fim|time:"H:i" }}</td>
+                                <td class="text-center">
+                                    {% if horario.consulta_set.exists %}
+                                        <span class="badge bg-danger">Agendado</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Disponível</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'excluir_horario' horario.id %}" class="btn btn-outline-danger btn-sm">Excluir</a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5" class="text-center p-4">Nenhum horário cadastrado.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
       </div>
 
-    {% elif pagina == 'editar_perfil' %}
+    {% elif pagina == 'consultas_agendadas' %}
       <div class="container">
-        <h2 class="mb-4">Editar Perfil</h2>
+        <h2 class="mb-4">Minhas Consultas Agendadas</h2>
+      
         {% if messages %}
           {% for message in messages %}
-            <div class="alert alert-success">{{ message }}</div>
+            <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
           {% endfor %}
         {% endif %}
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <form method="post">
-              {% csrf_token %}
-              {{ form.as_p }}
-              <button type="submit" class="btn btn-primary mt-3">Salvar Alterações</button>
-            </form>
+      
+        {% if consultas %}
+          {% for consulta in consultas %}
+          <div class="card mb-3 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                Consulta com: {{ consulta.cliente.usuario.get_full_name|default:consulta.cliente.usuario.username }}
+              </h5>
+              
+              {% if consulta.horario.data >= today %}
+                <span class="badge bg-success">Confirmada</span>
+              {% else %}
+                <span class="badge bg-secondary">Realizada</span>
+              {% endif %}
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <p><strong>Cliente:</strong> {{ consulta.cliente.usuario.get_full_name|default:consulta.cliente.usuario.username }}</p>
+                  <p><strong>Telefone do Cliente:</strong> {{ consulta.cliente.telefone }}</p>
+                </div>
+                <div class="col-md-6">
+                  <p><strong>Data:</strong> {{ consulta.horario.data|date:"l, d \d\e F \d\e Y" }}</p>
+                  <p><strong>Horário:</strong> das {{ consulta.horario.hora_inicio|time:"H:i" }} às {{ consulta.horario.hora_fim|time:"H:i" }}</p>
+                </div>
+              </div>
+              {% if consulta.observacoes %}
+                <hr>
+                <p><strong>Observações do Cliente:</strong></p>
+                <p class="fst-italic">"{{ consulta.observacoes }}"</p>
+              {% endif %}
+            </div>
+            <div class="card-footer text-end">
+              {% if consulta.horario.data >= today %}
+              <form method="post" action="{% url 'cancelar_consulta_funcionario' consulta.id %}" onsubmit="return confirm('Tem certeza que deseja cancelar esta consulta?');" style="display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger btn-sm">
+                      <i class="bi bi-x-circle"></i> Cancelar Consulta
+                  </button>
+              </form>
+              {% else %}
+                <small class="text-muted">Esta consulta já foi realizada.</small>
+              {% endif %}
+            </div>
           </div>
+          {% endfor %}
+        {% else %}
+          <div class="alert alert-info" role="alert">
+            Você não tem nenhuma consulta agendada no momento.
+          </div>
+        {% endif %}
+      </div>
+
+    {% elif pagina == 'editar_perfil' %}
+      <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+    
+                <h2 class="mb-4 text-center">Editar Perfil Profissional</h2>
+    
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-success text-center" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+    
+                <div class="card shadow-sm">
+                    <div class="card-body p-4 p-md-5">
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            <h5 class="mb-3 text-muted">Informações de Acesso</h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">Nome de Usuário</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                    {{ form.username|add_class:"form-control" }}
+                                </div>
+                                {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors|striptags }}</div>{% endif %}
+                            </div>
+    
+                            <div class="mb-4">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    {{ form.email|add_class:"form-control" }}
+                                </div>
+                                {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors|striptags }}</div>{% endif %}
+                            </div>
+    
+                            <hr>
+    
+                            <h5 class="mb-3 text-muted">Dados Profissionais</h5>
+    
+                            <div class="mb-4">
+                                <label for="{{ form.especialidade.id_for_label }}" class="form-label">Especialidade</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-star-fill"></i></span>
+                                    {{ form.especialidade|add_class:"form-control" }}
+                                </div>
+                                {% if form.especialidade.errors %}<div class="text-danger small mt-1">{{ form.especialidade.errors|striptags }}</div>{% endif %}
+                            </div>
+    
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg mt-3">
+                                    <i class="bi bi-save"></i> Salvar Alterações
+                                </button>
+                            </div>
+    
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
     {% endif %}
+
   </div>
 </div>
 {% endblock %}

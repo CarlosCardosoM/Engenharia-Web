@@ -153,6 +153,46 @@ def meus_horarios(request):
     if not hasattr(request.user, 'perfilfuncionario'): return redirect('home')
     horarios = HorarioDisponivel.objects.filter(funcionario=request.user.perfilfuncionario).order_by('-data', '-hora_inicio')
     return render(request, 'funcionario_dashboard.html', {'pagina': 'meus_horarios', 'horarios': horarios})
+@login_required
+def consultas_agendadas_funcionario(request):
+    """
+    Exibe todas as consultas agendadas para o funcionário logado.
+    """
+    if not hasattr(request.user, 'perfilfuncionario'):
+        return redirect('home')
+
+    consultas = Consulta.objects.filter(
+        funcionario=request.user.perfilfuncionario
+    ).order_by('horario__data', 'horario__hora_inicio')
+
+    return render(request, 'funcionario_dashboard.html', {
+        'pagina': 'consultas_agendadas',
+        'consultas': consultas,
+        'today': date.today() # Passamos 'today' para comparar as datas no template
+    })
+
+
+@login_required
+def cancelar_consulta_funcionario(request, consulta_id):
+    """
+    Permite que um funcionário cancele uma consulta agendada com ele.
+    """
+    # Garante que o funcionário só pode cancelar suas próprias consultas
+    consulta = get_object_or_404(
+        Consulta, 
+        id=consulta_id, 
+        funcionario__usuario=request.user
+    )
+    
+    if request.method == 'POST':
+        # Aqui você poderia adicionar uma lógica para notificar o cliente por e-mail, se desejado.
+        cliente_nome = consulta.cliente.usuario.get_full_name() or consulta.cliente.usuario.username
+        consulta.delete()
+        messages.success(request, f'A consulta com {cliente_nome} foi cancelada com sucesso.')
+        return redirect('consultas_agendadas_funcionario')
+
+    # Se não for POST, redireciona de volta para a lista (ou pode mostrar uma página de confirmação)
+    return redirect('consultas_agendadas_funcionario')
 
 @login_required
 def excluir_horario(request, horario_id):
@@ -164,7 +204,6 @@ def excluir_horario(request, horario_id):
         messages.success(request, 'Horário excluído com sucesso.')
     return redirect('adicionar_horario')
 
-# --- APIs (para JavaScript) ---
 @login_required
 def get_horarios_disponiveis(request, funcionario_id):
     funcionario = get_object_or_404(PerfilFuncionario, id=funcionario_id)

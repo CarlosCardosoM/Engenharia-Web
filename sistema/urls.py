@@ -20,5 +20,7 @@ urlpatterns = [
     path('funcionarios/', views.listar_funcionarios, name='listar_funcionarios'),
     path('api/horarios/<int:funcionario_id>/', views.get_horarios_disponiveis, name='get_horarios_disponiveis'),
     path('api/meus-horarios/', views.api_meus_horarios, name='api_meus_horarios'),
+    path('funcionario/consultas/', views.consultas_agendadas_funcionario, name='consultas_agendadas_funcionario'),
+    path('consulta/cancelar_pelo_funcionario/<int:consulta_id>/', views.cancelar_consulta_funcionario, name='cancelar_consulta_funcionario'),
     
 ]
