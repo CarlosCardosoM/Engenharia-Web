@@ -6,138 +6,321 @@
 {% block content %}
 <div class="d-flex min-vh-100">
 
-  <!-- Menu lateral com imagem de fundo -->
   <div class="text-white p-4 d-flex flex-column" style="width: 250px; background: url('{% static "img/fundo.png" %}') no-repeat center center; background-size: cover;">
-    <!-- Slogan no topo -->
     <div class="mb-4 text-center">
       <img src="{% static 'img/s.png' %}" alt="Slogan" class="img-fluid" style="max-height: 80px;">
     </div>
 
-    <!-- Espaço flexível para centralizar o menu -->
     <div class="flex-grow-1 d-flex flex-column justify-content-center">
-      <!-- Menu com espaçamento melhorado -->
       <div class="mb-4">
         <a href="{% url 'agendar_consulta' %}" 
            class="d-block py-3 px-3 mb-2 rounded text-white text-decoration-none text-center 
-                  {% if pagina == 'agendar_consulta' %}bg-primary{% else %}hover-bg-primary{% endif %}"
+                   {% if pagina == 'agendar_consulta' %}bg-primary{% else %}hover-bg-primary{% endif %}"
            style="transition: all 0.3s; font-size: 1.1rem;">
           Agendar Consulta
         </a>
         
         <a href="{% url 'minhas_consultas' %}" 
            class="d-block py-3 px-3 mb-2 rounded text-white text-decoration-none text-center 
-                  {% if pagina == 'minhas_consultas' %}bg-primary{% else %}hover-bg-primary{% endif %}"
+                   {% if pagina == 'minhas_consultas' %}bg-primary{% else %}hover-bg-primary{% endif %}"
            style="transition: all 0.3s; font-size: 1.1rem;">
           Minhas Consultas
         </a>
         
         <a href="{% url 'editar_perfil' %}" 
            class="d-block py-3 px-3 mb-2 rounded text-white text-decoration-none text-center 
-                  {% if pagina == 'editar_perfil' %}bg-primary{% else %}hover-bg-primary{% endif %}"
+                   {% if pagina == 'editar_perfil' %}bg-primary{% else %}hover-bg-primary{% endif %}"
            style="transition: all 0.3s; font-size: 1.1rem;">
           Editar Perfil
         </a>
       </div>
     </div>
 
-    <!-- Logout na base -->
     <div class="mt-auto">
       <a href="{% url 'logout' %}" 
          class="d-block py-3 px-3 rounded text-white text-decoration-none text-center hover-bg-primary"
          style="transition: all 0.3s; font-size: 1.1rem;">
-        Logout
+        Sair
       </a>
     </div>
   </div>
 
-  <!-- Conteúdo principal -->
   <div class="flex-grow-1 p-4 bg-light">
 
     {% if pagina == 'dashboard' %}
-      <h2>Bem-vindo ao Painel do Cliente</h2>
-      <p>Use o menu à esquerda para navegar.</p>
+    <h2>Bem-vindo ao Painel do Cliente</h2>
+    <p>Use o menu à esquerda para navegar.</p>
 
     {% elif pagina == 'agendar_consulta' %}
-      <div class="container">
+    <style>
+        .funcionario-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid #ddd;
+        }
+        .funcionario-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .funcionario-card.selected {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+            background-color: #f0f8ff;
+        }
+        .horario-btn {
+            margin: 5px;
+        }
+    </style>
+
+    <div class="container">
         <h2 class="mb-4">Agendar Consulta</h2>
+        <p class="text-muted">Passo 1: Selecione um profissional.</p>
 
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <form method="post" novalidate>
-              {% csrf_token %}
-
-              {% for field in form %}
-                <div class="mb-3">
-                  <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                  {{ field|add_class:"form-control" }}
-                  {% if field.help_text %}
-                    <div class="form-text">{{ field.help_text }}</div>
-                  {% endif %}
-                  {% if field.errors %}
-                    <div class="text-danger small mt-1">
-                      {{ field.errors|striptags }}
+        <div class="row" id="lista-funcionarios">
+            {% for f in funcionarios %}
+            <div class="col-md-4 mb-4">
+                <div class="card funcionario-card p-3 text-center" data-funcionario-id="{{ f.id }}" data-funcionario-nome="{{ f.usuario.get_full_name|default:f.usuario.username }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ f.usuario.get_full_name|default:f.usuario.username }}</h5>
+                        <p class="card-text text-muted">{{ f.especialidade }}</p>
                     </div>
-                  {% endif %}
                 </div>
-              {% endfor %}
-
-              <button type="submit" class="btn btn-success">
-                <i class="bi bi-calendar-plus"></i> Agendar
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-    {% elif pagina == 'minhas_consultas' %}
-      <div class="container">
-        <h2>Minhas Consultas</h2>
-        {% if consultas %}
-          <ul class="list-group">
-            {% for consulta in consultas %}
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ consulta }} 
-                <a href="{% url 'cancelar_consulta' consulta.id %}" class="btn btn-danger btn-sm">Cancelar</a>
-              </li>
+            </div>
             {% endfor %}
-          </ul>
+        </div>
+
+        <hr class="my-4">
+
+        <div id="horarios-container" style="display: none;">
+            <p class="text-muted">Passo 2: Escolha um horário para <strong id="nome-funcionario-selecionado"></strong> e confirme.</p>
+            <form id="form-agendamento" method="POST">
+                {% csrf_token %}
+                <div id="horarios-disponiveis" class="mb-3">
+                    </div>
+                <div class="mb-3">
+                    <label for="observacoes" class="form-label">Observações (opcional)</label>
+                    <textarea name="observacoes" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success" disabled>Confirmar Agendamento</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const funcionarioCards = document.querySelectorAll('.funcionario-card');
+        const horariosContainer = document.getElementById('horarios-container');
+        const horariosDisponiveisDiv = document.getElementById('horarios-disponiveis');
+        const nomeFuncionarioSpan = document.getElementById('nome-funcionario-selecionado');
+        const formAgendamento = document.getElementById('form-agendamento');
+        const submitButton = formAgendamento.querySelector('button[type="submit"]');
+
+        funcionarioCards.forEach(card => {
+            card.addEventListener('click', function() {
+                funcionarioCards.forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+
+                const funcionarioId = this.dataset.funcionarioId;
+                const funcionarioNome = this.dataset.funcionarioNome;
+                
+                nomeFuncionarioSpan.textContent = funcionarioNome;
+                horariosContainer.style.display = 'block';
+                horariosDisponiveisDiv.innerHTML = '<p>Carregando horários...</p>';
+                submitButton.disabled = true;
+
+                fetch(`/api/horarios/${funcionarioId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        horariosDisponiveisDiv.innerHTML = '';
+                        if (data.horarios && data.horarios.length > 0) {
+                            data.horarios.forEach(horario => {
+                                const radioWrapper = document.createElement('div');
+                                radioWrapper.classList.add('form-check', 'form-check-inline');
+                                
+                                const radioInput = document.createElement('input');
+                                radioInput.type = 'radio';
+                                radioInput.name = 'horario_id';
+                                radioInput.value = horario.id;
+                                radioInput.id = `horario-${horario.id}`;
+                                radioInput.classList.add('form-check-input');
+                                radioInput.style.display = 'none'; // Esconde o rádio original
+
+                                const radioLabel = document.createElement('label');
+                                radioLabel.htmlFor = `horario-${horario.id}`;
+                                radioLabel.classList.add('btn', 'btn-outline-primary', 'horario-btn');
+                                radioLabel.textContent = `${horario.data} (${horario.dia_semana}) às ${horario.hora_inicio}`;
+
+                                radioInput.addEventListener('change', function() {
+                                    // Habilita o botão de submit
+                                    submitButton.disabled = false;
+                                    // Lógica para destacar o label selecionado
+                                    document.querySelectorAll('.horario-btn').forEach(label => label.classList.remove('active'));
+                                    radioLabel.classList.add('active');
+                                });
+
+                                radioWrapper.appendChild(radioInput);
+                                radioWrapper.appendChild(radioLabel);
+                                horariosDisponiveisDiv.appendChild(radioWrapper);
+                            });
+                        } else {
+                            horariosDisponiveisDiv.innerHTML = '<p class="text-danger">Nenhum horário disponível para este profissional no momento.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar horários:', error);
+                        horariosDisponiveisDiv.innerHTML = '<p class="text-danger">Ocorreu um erro ao carregar os horários. Tente novamente.</p>';
+                    });
+            });
+        });
+    });
+    </script>
+    
+    {% elif pagina == 'minhas_consultas' %}
+<div class="container">
+  <h2 class="mb-4">Minhas Consultas Agendadas</h2>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if consultas %}
+    {% for consulta in consultas %}
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">
+          Consulta com {{ consulta.funcionario.usuario.get_full_name|default:consulta.funcionario.usuario.username }}
+        </h5>
+        
+        {% if consulta.horario.data >= today %}
+          <span class="badge bg-success">Confirmada</span>
         {% else %}
-          <p>Você não tem consultas agendadas.</p>
+          <span class="badge bg-secondary">Realizada</span>
         {% endif %}
       </div>
-
-    {% elif pagina == 'editar_perfil' %}
-      <div class="container">
-        <h2 class="mb-4">Editar Perfil</h2>
-        
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <form method="post" novalidate>
-              {% csrf_token %}
-              
-              {% for field in form %}
-                <div class="mb-3">
-                  <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
-                  {{ field|add_class:"form-control" }}
-                  {% if field.help_text %}
-                    <div class="form-text">{{ field.help_text }}</div>
-                  {% endif %}
-                  {% if field.errors %}
-                    <div class="text-danger small mt-1">
-                      {{ field.errors|striptags }}
-                    </div>
-                  {% endif %}
-                </div>
-              {% endfor %}
-              
-              <button type="submit" class="btn btn-primary mt-3">
-                <i class="bi bi-save"></i> Salvar Alterações
-              </button>
-            </form>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Profissional:</strong> {{ consulta.funcionario.usuario.get_full_name|default:consulta.funcionario.usuario.username }}</p>
+            <p><strong>Especialidade:</strong> {{ consulta.funcionario.especialidade }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Data:</strong> {{ consulta.horario.data|date:"l, d \d\e F \d\e Y" }}</p>
+            <p><strong>Horário:</strong> das {{ consulta.horario.hora_inicio|time:"H:i" }} às {{ consulta.horario.hora_fim|time:"H:i" }}</p>
           </div>
         </div>
+        {% if consulta.observacoes %}
+          <hr>
+          <p><strong>Suas Observações:</strong></p>
+          <p class="fst-italic">"{{ consulta.observacoes }}"</p>
+        {% endif %}
       </div>
-    {% endif %}
+      <div class="card-footer text-end">
+        {% if consulta.horario.data >= today %}
+        <a href="{% url 'cancelar_consulta' consulta.id %}" class="btn btn-danger btn-sm">
+          <i class="bi bi-x-circle"></i> Cancelar Consulta
+        </a>
+        {% else %}
+        <small class="text-muted">Esta consulta já foi realizada.</small>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-info" role="alert">
+      Você não tem nenhuma consulta agendada no momento.
+    </div>
+  {% endif %}
+</div>
+
+    {% elif pagina == 'editar_perfil' %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+
+      <h2 class="mb-4 text-center">Editar Meu Perfil</h2>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-success text-center">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="card shadow-sm">
+        <div class="card-body p-4 p-md-5">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            
+            <div class="row">
+              <div class="col-md-6">
+                <h5 class="mb-3 text-muted">Informações de Acesso</h5>
+                
+                <div class="mb-3">
+                  <label for="{{ form.username.id_for_label }}" class="form-label">Nome de Usuário</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    {{ form.username|add_class:"form-control" }}
+                  </div>
+                  {% if form.username.errors %}
+                      <div class="text-danger small mt-1">{{ form.username.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="mb-4">
+                  <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                   <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                    {{ form.email|add_class:"form-control" }}
+                  </div>
+                  {% if form.email.errors %}
+                      <div class="text-danger small mt-1">{{ form.email.errors|striptags }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <h5 class="mb-3 text-muted">Dados Pessoais</h5>
+
+                <div class="mb-3">
+                    <label for="{{ form.matricula.id_for_label }}" class="form-label">Matrícula</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                      {{ form.matricula|add_class:"form-control" }}
+                    </div>
+                    {% if form.matricula.errors %}
+                        <div class="text-danger small mt-1">{{ form.matricula.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="{{ form.telefone.id_for_label }}" class="form-label">Telefone</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                      {{ form.telefone|add_class:"form-control" }}
+                    </div>
+                    {% if form.telefone.errors %}
+                        <div class="text-danger small mt-1">{{ form.telefone.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="d-grid">
+                 <button type="submit" class="btn btn-primary btn-lg mt-3">
+                    <i class="bi bi-save"></i> Salvar Alterações
+                 </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
   </div>
 
 </div>
