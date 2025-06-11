@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from datetime import date
 from .forms import *
 from .models import *
+from django.contrib import messages
 
 def home(request):
     return render(request, 'home.html')
@@ -139,14 +140,22 @@ def funcionario_dashboard(request):
 
 @login_required
 def adicionar_horario(request):
-    if not hasattr(request.user, 'perfilfuncionario'): return redirect('home')
+    if not hasattr(request.user, 'perfilfuncionario'):
+        return redirect('home')
+
     if request.method == 'POST':
         form = HorarioForm(request.POST, funcionario=request.user.perfilfuncionario)
         if form.is_valid():
-            form.save()
-            return redirect('adicionar_horario')
-    form = HorarioForm()
+            horario = form.save(commit=False) 
+            horario.funcionario = request.user.perfilfuncionario 
+            horario.save()
+            
+            messages.success(request, 'Horário adicionado com sucesso!') 
+    else:
+        form = HorarioForm()
+
     return render(request, 'funcionario_dashboard.html', {'pagina': 'adicionar_horario', 'form': form})
+
 
 @login_required
 def meus_horarios(request):

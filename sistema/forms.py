@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import PerfilCliente, PerfilFuncionario, HorarioDisponivel, Consulta
+from .models import HorarioDisponivel
+from datetime import date
 
 class RegistroClienteForm(forms.ModelForm):
     username = forms.CharField(label="Nome de Usuário", required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
@@ -47,30 +49,46 @@ class RegistroFuncionarioForm(forms.ModelForm):
         return user
 
 class HorarioForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        # 1. Primeiro, pegamos nosso argumento personalizado 'funcionario' e o removemos dos kwargs.
+        self.funcionario = kwargs.pop('funcionario', None)
+
+        # 2. AGORA, chamamos o __init__ da classe pai, que receberá apenas os argumentos que conhece.
+        super().__init__(*args, **kwargs)
+
+        # 3. Depois, podemos fazer outras modificações, como definir a data mínima.
+        self.fields['data'].widget.attrs['min'] = date.today().isoformat()
+
+    # O resto da sua classe continua igual
     class Meta:
         model = HorarioDisponivel
         fields = ['data', 'hora_inicio', 'hora_fim']
         widgets = {
-            'data': forms.DateInput(attrs={'type': 'date', 'readonly': True, 'class': 'form-control'}),
+            'data': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'hora_inicio': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
             'hora_fim': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        self.funcionario = kwargs.pop('funcionario', None)
-        super().__init__(*args, **kwargs)
-
     def clean(self):
         cleaned_data = super().clean()
-        data, hora_inicio, hora_fim = cleaned_data.get('data'), cleaned_data.get('hora_inicio'), cleaned_data.get('hora_fim')
+        data = cleaned_data.get("data")
+        hora_inicio = cleaned_data.get("hora_inicio")
+        hora_fim = cleaned_data.get("hora_fim")
+
         if hora_inicio and hora_fim and hora_inicio >= hora_fim:
             raise forms.ValidationError("O horário de início deve ser antes do horário de fim.")
+        
         if self.funcionario and data and hora_inicio and hora_fim:
             conflitos = HorarioDisponivel.objects.filter(
-                funcionario=self.funcionario, data=data, hora_inicio__lt=hora_fim, hora_fim__gt=hora_inicio
+                funcionario=self.funcionario,
+                data=data,
+                hora_inicio__lt=hora_fim,
+                hora_fim__gt=hora_inicio
             ).exclude(pk=self.instance.pk if self.instance else None)
+            
             if conflitos.exists():
                 raise forms.ValidationError("Este horário conflita com outro já cadastrado.")
+        
         return cleaned_data
 
 class EditarPerfilClienteForm(forms.Form):

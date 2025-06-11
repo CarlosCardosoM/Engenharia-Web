@@ -15,14 +15,15 @@
     
     <div class="flex-grow-1 d-flex flex-column justify-content-center">
       <div class="mb-4">
-        
-        <a href="{% url 'adicionar_horario' %}" 
-           class="d-flex align-items-center py-3 px-3 mb-2 rounded text-white text-decoration-none 
-                  {% if pagina == 'adicionar_horario' %}bg-primary{% else %}hover-bg-primary{% endif %}"
-           style="transition: all 0.3s; font-size: 1.1rem;">
-          <i class="bi bi-clock-plus me-3" style="font-size: 1.2rem;"></i>
-          Adicionar Horário
-        </a>
+    
+    {# ---- Link antigo comentado para desativá-lo ---- #}
+    <a href="{% url 'adicionar_horario' %}" 
+         class="d-flex align-items-center py-3 px-3 mb-2 rounded text-white text-decoration-none 
+                {% if pagina == 'adicionar_horario' %}bg-primary{% else %}hover-bg-primary{% endif %}"
+         style="transition: all 0.3s; font-size: 1.1rem;">
+       <i class="bi bi-calendar-plus me-3" style="font-size: 1.2rem;"></i>
+       Adicionar Horário
+    </a> 
         
         <a href="{% url 'meus_horarios' %}" 
            class="d-flex align-items-center py-3 px-3 mb-2 rounded text-white text-decoration-none 
