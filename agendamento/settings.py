@@ -1,14 +1,14 @@
 from pathlib import Path
 import os
-import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY", "chave-insegura-dev")
+SECRET_KEY = 'django-insecure-^t8qpk!sgi=o1ir%*git*bgup06+t3txo=3g##zh&94!@q!m#+'
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://agendasaude.loca.lt']
 
 
 
@@ -28,7 +28,7 @@ LOGOUT_REDIRECT_URL = '/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Adicionado para servir arquivos estáticos
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ ADICIONE ESTA LINHA
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -36,6 +36,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'agendamento.urls'
 
@@ -57,9 +58,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'agendamento.wsgi.application'
 
+import dj_database_url
+
 DATABASES = {
-    'default': dj_database_url.config(default=os.environ.get("DATABASE_URL"))
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3',
+        conn_max_age=600
+    )
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -73,14 +80,22 @@ LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
+
 USE_TZ = True
 
 STATIC_URL = '/static/'
+
 STATICFILES_DIRS = [
     BASE_DIR / "agendamento" / "static",
     os.path.join(BASE_DIR, 'static'),
 ]
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+
+
