@@ -8,7 +8,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "chave-insegura-dev")
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "agendamento-ty1y.onrender.com").split(",")
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+
 
 
 INSTALLED_APPS = [
