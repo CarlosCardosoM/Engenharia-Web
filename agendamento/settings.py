@@ -8,7 +8,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "chave-insegura-dev")
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['agendamento-ty1y.onrender.com', 'localhost', '127.0.0.1']  # Ou adicione seu domínio Render depois que estiver pronto
+ALLOWED_HOSTS = ['agendamento-ty1y.onrender.com'] # Ou adicione seu domínio Render depois que estiver pronto
 
 INSTALLED_APPS = [
     'django.contrib.admin',
